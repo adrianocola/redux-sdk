@@ -1,5 +1,6 @@
-import { take, takeEvery, takeLatest, put, call, fork, select, cancel, cancelled } from 'redux-saga/effects'
-import backand from '@backand/vanilla-sdk'
+import backand from '@backand/vanilla-sdk';
+import { take, takeEvery, takeLatest, put, call, fork, select, cancel, cancelled } from 'redux-saga/effects';
+
 
 export default function* rootSaga() {
   // register custom sagas for run() here!
@@ -14,17 +15,17 @@ export default function* rootSaga() {
 // add custom sagas here!
 
 // object sagas
-function* getSaga ({ payload }) {
-  var upname = payload.name.toUpperCase();
-  yield put({ type: `${upname}_REQUEST` })
+function* getSaga({ payload }) {
+  const upname = payload.name.toUpperCase();
+  yield put({ type: `${upname}_REQUEST` });
   try {
-    const response = yield call(backand.object.getList, payload.name, ...payload.args)
+    const response = yield call(backand.object.getList, payload.name, ...payload.args);
     yield put({
       type: `${upname}_RESOLVE`,
       payload: {
         data: response.data
       }
-    })
+    });
   } catch (error) {
     yield put({
       type: `${upname}_REJECT`,
@@ -35,10 +36,10 @@ function* getSaga ({ payload }) {
   }
 }
 
-function* createSaga ({ payload }) {
-  var upname = payload.name.toUpperCase();
+function* createSaga({ payload }) {
+  const upname = payload.name.toUpperCase();
   try {
-    const response = yield call(backand.object.create, payload.name, ...payload.args)
+    const response = yield call(backand.object.create, payload.name, ...payload.args);
     // SUCCESS CALLBACK: Write your code here!
     // Use the following type, and payload structure in case of using dispatch():
     // yield put({
@@ -57,10 +58,10 @@ function* createSaga ({ payload }) {
   }
 }
 
-function* updateSaga ({ payload }) {
-  var upname = payload.name.toUpperCase();
+function* updateSaga({ payload }) {
+  const upname = payload.name.toUpperCase();
   try {
-    const response = yield call(backand.object.update, payload.name, ...payload.args)
+    const response = yield call(backand.object.update, payload.name, ...payload.args);
     // SUCCESS CALLBACK: Write your code here!
     // Use the following type, and payload structure in case of using dispatch():
     // yield put({
@@ -79,10 +80,10 @@ function* updateSaga ({ payload }) {
   }
 }
 
-function* removeSaga ({ payload }) {
-  var upname = payload.name.toUpperCase();
+function* removeSaga({ payload }) {
+  const upname = payload.name.toUpperCase();
   try {
-    const response = yield call(backand.object.remove, payload.name, ...payload.args)
+    const response = yield call(backand.object.remove, payload.name, ...payload.args);
     // SUCCESS CALLBACK: Write your code here!
     // Use the following type, and payload structure in case of using dispatch():
     // yield put({
@@ -103,7 +104,7 @@ function* removeSaga ({ payload }) {
 
 export function* objectRootSaga() {
   yield [
-    fork(takeEvery, 'SAGA_GET_REQUEST'   , getSaga),
+    fork(takeEvery, 'SAGA_GET_REQUEST', getSaga),
     fork(takeEvery, 'SAGA_CREATE_REQUEST', createSaga),
     fork(takeEvery, 'SAGA_UPDATE_REQUEST', updateSaga),
     fork(takeEvery, 'SAGA_REMOVE_REQUEST', removeSaga)
@@ -111,58 +112,52 @@ export function* objectRootSaga() {
 }
 
 // user sagas
-function* authorizeSaga ({ payload }) {
-  yield put(request())
+function* authorizeSaga({ payload }) {
+  yield put(request());
   try {
-    let fn = backand[payload.fn] || backand.user[payload.fn]
-    let response = yield call(fn, ...payload.args)
-    yield put(resolve(response.data))
-  } catch(error) {
-    yield put(reject(error.data))
+    const fn = backand[payload.fn] || backand.user[payload.fn];
+    const response = yield call(fn, ...payload.args);
+    yield put(resolve(response.data));
+  } catch (error) {
+    yield put(reject(error.data));
   } finally {
-    if (yield cancelled()) { }
+    // if (yield cancelled()) {  }
   }
 }
 
-function* signoutSaga () {
-  yield put(request())
-  let response = yield call(backand.signout)
-  yield put({ type: 'SIGNOUT' })
+function* signoutSaga() {
+  yield put(request());
+  const response = yield call(backand.signout);
+  yield put({ type: 'SIGNOUT' });
 }
 
-export function* userRootSaga () {
+export function* userRootSaga() {
   while (true) {
-    let action = yield take('SAGA_SIGNIN_REQUEST')
-    const task = yield fork(authorizeSaga, action)
-    action = yield take(['SAGA_SIGNOUT', 'SIGNIN_REJECT'])
+    let action = yield take('SAGA_SIGNIN_REQUEST');
+    const task = yield fork(authorizeSaga, action);
+    action = yield take(['SAGA_SIGNOUT', 'SIGNIN_REJECT']);
     if (action.type === 'SIGNIN_REJECT') {
       continue;
     }
     if (action.type === 'SAGA_SIGNOUT') {
-      yield fork(signoutSaga)
-      yield cancel(task)
+      yield fork(signoutSaga);
+      yield cancel(task);
     }
   }
 }
 
-const request = () => {
-  return {
-    type: 'SIGNIN_REQUEST',
+const request = () => ({
+  type: 'SIGNIN_REQUEST',
+});
+const resolve = (data) => ({
+  type: 'SIGNIN_RESOLVE',
+  payload: {
+    data
   }
-}
-const resolve = (data) => {
-  return {
-    type: 'SIGNIN_RESOLVE',
-    payload: {
-      data
-    }
+});
+const reject = (error) => ({
+  type: 'SIGNIN_REJECT',
+  payload: {
+    error
   }
-}
-const reject = (error) => {
-  return {
-    type: 'SIGNIN_REJECT',
-    payload: {
-      error
-    }
-  }
-}
+});
