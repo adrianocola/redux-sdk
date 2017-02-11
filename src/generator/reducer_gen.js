@@ -9,18 +9,20 @@ module.exports = function reducer_gen (name) {
 export default (state = {}, action) => {
   switch (action.type) {
     case ${upname}_REQUEST:
-      return { loading: true };
+      return Object.assign({}, state, {
+        loading: true,
+      });
     case ${upname}_RESOLVE:
       return Object.assign({}, state, {
         loading: false,
         data: action.payload.data,
-        loaded: true
+        loaded: true,
       });
     case ${upname}_REJECT:
       return Object.assign({}, state, {
         loading: false,
         error: action.payload.error,
-        loaded: false
+        loaded: false,
       });
     case CREATE_${upname}_RESOLVE:
       // Write your code here!
@@ -32,7 +34,7 @@ export default (state = {}, action) => {
       break;
     case CREATE_${upname}_REJECT:
       return Object.assign({}, state, {
-        error: action.payload.error
+        error: action.payload.error,
       });
     case UPDATE_${upname}_RESOLVE:
       // Write your code here!
@@ -44,7 +46,7 @@ export default (state = {}, action) => {
       break;
     case UPDATE_${upname}_REJECT:
       return Object.assign({}, state, {
-        error: action.payload.error
+        error: action.payload.error,
       });
     case REMOVE_${upname}_RESOLVE:
       // Write your code here!
@@ -57,7 +59,7 @@ export default (state = {}, action) => {
       break;
     case REMOVE_${upname}_REJECT:
       return Object.assign({}, state, {
-        error: action.payload.error
+        error: action.payload.error,
       });
     default:
       return state;
